@@ -2,11 +2,9 @@
 #include <iostream>
 #include <string>
 #include <conio.h>
+#include <algorithm>
 
 using namespace std;
-
-const int tNlen = 10; //tableNumber length
-const int dNlen = 2; //department number length
 
 struct Worker
 {
@@ -18,8 +16,7 @@ struct Worker
 	
 	unsigned short int birthday[3]; //day, month, year
  
-	unsigned short int department;
-	unsigned short int employmentYear;
+	unsigned int department, employmentYear;
 
 	string getFullName()
 	{
@@ -34,62 +31,75 @@ struct Worker
 	void printWorkerInfo()
 	{
 		cout << "Worker: " << getFullName() << "\nTable number: " << tableNumber << "\nDepartment: " << department;
-		cout << "\nEmployment year: " << employmentYear << "\nAddress: " << address;
+		cout << "\nEmployment year: " << employmentYear;
+		cout << "\nAddress: " << address;
 		cout << "\nBirthday: " << getBirthday() << "\nEducation info: " << education << "\n";
 	}
 };
 
+Worker* InitArray();
 Worker InitWorker();
-Worker* InitArray(int);
-Worker* AddWorker(Worker*, int);
-Worker FindByTableNumber(Worker*, int, int);
-void PrintArray(Worker*, int);
-void EditWorkerInfo(Worker);
+Worker EditWorkerInfo(Worker);
+int FindByTableNumber(int);
+void AddWorker();
+void PrintArray();
+void arrSort();
+void Question();
 
-void Question(Worker*);
+Worker* workers;
+int length;
 
 int main()
 {
-	int length;
 	cout << "Enter a new worker list length:\n";
-	scanf_s("%d", &length, 2);
+	scanf_s("%u", &length, 2);
 
-	Worker* workers = InitArray(length);
+	if ((int)length < 1) length = 1;
 
-	Question(workers);
+	workers = InitArray();
+
+	Question();
 
 	return 0;
 }
 
-void Question(Worker* arr)
+void Question()
 {
-	string choise;
-	int l = NULL;
+	bool exit = false;
 
-	cout << "\nEnter a command ('add' - add new worker, 'addarr' - add worker list, 'find' - find worker in list, 'print' - print worker list):\n";
+	string choise;
+	int l = length;
+
+	cout << "\nEnter a command ('add' - add new worker, 'find' - find worker in list, 'print' - print worker list, 'edit' - edit worker info, 'sort' - sort list by table number, 'exit' - close program):\n";
+
 	getline(cin, choise);
 
 	if (choise == "add")
 	{
 		if (l == NULL || l < 0) cout << "\nWorker list does not exists\n";
-		else AddWorker(arr, l);
-	}
-	else if (choise == "addarr")
-	{
-		cout << "\nEnter a length of list: ";
-		scanf_s("%d", &l, 2);
-		arr = InitArray(l);
-		cout << "\n";
+		else AddWorker();
 	}
 	else if (choise == "find")
 	{
 		if (l == NULL || l < 0) cout << "\nWorker list does not exists\n";
 		else
 		{
+			cout << "\nEnter a table number:\n";
 			int n;
-			scanf_s("%d", &n, tNlen);
+			scanf_s("%u", &n);
+
+			if ((int)n < 1) n = 1;
+
 			cout << "\n";
-			FindByTableNumber(arr, l, n).printWorkerInfo();
+
+			try
+			{
+				workers[FindByTableNumber(n)].printWorkerInfo();
+			}
+			catch (string s)
+			{
+				cout << "\n" << s << "\n";
+			}
 		}
 	}
 	else if (choise == "print")
@@ -98,15 +108,46 @@ void Question(Worker* arr)
 		else
 		{
 			cout << "\n";
-			PrintArray(arr, l);
+			PrintArray();
 		}
+	}
+	else if (choise == "edit")
+	{
+		if (l == NULL || l < 0) cout << "\nWorker list does not exists\n";
+		else
+		{
+			cout << "\nEnter a table number:\n";
+			int n;
+			scanf_s("%u", &n);
+
+			if ((int)n < 0) n = 1;
+
+			cout << "\n";
+
+			try
+			{
+				workers[FindByTableNumber(n)] = EditWorkerInfo(workers[FindByTableNumber(n)]);
+			}
+			catch (string s)
+			{
+				cout << "\n" << s << "\n";
+			}
+		}
+	}
+	else if (choise == "sort")
+	{
+		arrSort();
+	}
+	else if (choise == "exit")
+	{
+		exit = true;
 	}
 	else
 	{
 		cout << "\nNo such command\n";
 	}
 
-	Question(arr);
+	if(!exit) Question();
 }
 
 Worker InitWorker()
@@ -121,144 +162,207 @@ Worker InitWorker()
 	getline(cin, w.fullName[2]);
 
 	printf("\n\nEnter birthday:\nDay: ");
-	scanf_s("%d", &w.birthday[0], 2);
+	scanf_s("%u", &w.birthday[0]);
 	printf("\nMonth: ");
-	scanf_s("%d", &w.birthday[1], 2);
+	scanf_s("%u", &w.birthday[1]);
 	printf("\nYear: ");
-	scanf_s("%d", &w.birthday[2], 4);
+	scanf_s("%u", &w.birthday[2]);
 
 	printf("\n\nEnter address: ");
-	getline(cin, w.address);
+	cin.ignore();
 	getline(cin, w.address);
 
 	printf("\n\nEnter education info: ");
 	getline(cin, w.education);
 
 	printf("\n\nEnter employment year: ");
-	scanf_s("%d", &w.employmentYear, 4);
+	scanf_s("%u", &w.employmentYear);
 
 	printf("\n\nEnter table number: ");
-	scanf_s("%d", &w.tableNumber, tNlen);
+	scanf_s("%u", &w.tableNumber);
 
 	printf("\n\nEnter department number: ");
-	scanf_s("%d", &w.department, dNlen);
+	scanf_s("%u", &w.department);
 
 	return w;
 }
 
-Worker* AddWorker(Worker* arr, int arrLength)
+void AddWorker()
 {
-	int newLength = arrLength + 1;
-	Worker* temp = InitArray(newLength);
+	Worker* temp = new Worker[length + 1];
 
-	for (int i = 0; i < arrLength; i++)
+	for (int i = 0; i < length; i++)
 	{
-		temp[i] = arr[i];
+		temp[i] = workers[i];
 	}
-	temp[arrLength] = InitWorker();
+	temp[length] = InitWorker();
 
-	delete[] arr;
+	workers = temp;
+	length++;
 
-	return temp;
+	cin.ignore();
 }
 
-Worker* InitArray(int length)
+Worker* InitArray()
 {
+	cin.ignore();
+
 	if (length < 1) length = 1;
 
 	Worker* arr = (Worker*)malloc(length * sizeof(Worker)); 
 
+	arr = new Worker[length];
+
 	if (arr == NULL) return NULL;
+
+	string choise;
 
 	for (int i = 0; i < length; i++)
 	{
-		printf("\nEnter worker data:\n");
-		arr[i] = InitWorker();
-
-		string choise = "";
-
-		while (choise != "y" || choise != "n")
+		if (choise != "n")
 		{
-			printf("\nDo you want to continue? (y/n)");
-			getline(cin, choise);
+			printf("\nEnter worker data:\n");
+			arr[i] = InitWorker();
+
+			if (i < length - 1)
+			{
+				do
+				{
+					printf("\nDo you want to continue? (y/n)\n");
+					cout << choise << "\n";
+					cin >> choise;
+				} while (choise != "y" && choise != "n");
+			}
 		}
-		if (choise == "n") break;
+		else
+		{
+			arr[i].address = "<Empty>";
+			arr[i].birthday[0] = 0;
+			arr[i].birthday[1] = 0;
+			arr[i].birthday[2] = 0;
+			arr[i].department = 0;
+			arr[i].education = "<Empty>";
+			arr[i].employmentYear = 0;
+			arr[i].fullName[0] = "<Empty>";
+			arr[i].fullName[1] = "";
+			arr[i].fullName[2] = "";
+			arr[i].tableNumber = 0;
+		}
 	}
+	cout << "\nWorker list saved!\n\n";
+
+	cin.ignore();
+
 	return arr;
 }
 
-void PrintArray(Worker* arr, int arrLength)
+void PrintArray()
 {
-	for (int i = 0; i < arrLength; i++)
+	for (int i = 0; i < length; i++)
 	{
-		arr[i].printWorkerInfo();
+		workers[i].printWorkerInfo();
 		cout << "\n";
 	}
 }
 
-Worker FindByTableNumber(Worker* arr, int arrLength, int number)
+int FindByTableNumber(int number)
 {
-	for (int i = 0; i < arrLength; i++)
+	int counter = 0;
+
+	for (int i = 0; i < length; i++)
 	{
-		if (arr[i].tableNumber == number) return arr[i];
+		if (workers[i].tableNumber == number)
+		{
+			counter++;
+			cin.ignore();
+			return i;
+		}
 	}
 
-	cout << "No workers found with table number " << number;
+	string s = "No workers found with table number " + to_string(number);
+
+	if(counter == 0) throw  s;
+
+	cin.ignore();
 }
 
-void EditWorkerInfo(Worker w)
+Worker EditWorkerInfo(Worker w)
 {
+	Worker k;
+	k = w;
 	cout << "\nEnter field to edit (name/birthday/address/education/emplyear/department/tablenum):\n";
-	
+
 	string field;
 	getline(cin, field);
 	
 	if (field == "name")
 	{
 		printf("\nEnter first name: ");
-		getline(cin, w.fullName[0]);
+		getline(cin, k.fullName[0]);
 		printf("\nEnter surname: ");
-		getline(cin, w.fullName[1]);
+		getline(cin, k.fullName[1]);
 		printf("\nEnter last name: ");
-		getline(cin, w.fullName[2]);
+		getline(cin, k.fullName[2]);
 	}
 	else if (field == "birthday")
 	{
 		printf("\n\nEnter birthday:\nDay: ");
-		scanf_s("%d", &w.birthday[0], 2);
+		scanf_s("%d", &k.birthday[0], 2);
 		printf("\nMonth: ");
-		scanf_s("%d", &w.birthday[1], 2);
+		scanf_s("%d", &k.birthday[1], 2);
 		printf("\nYear: ");
-		scanf_s("%d", &w.birthday[2], 4);
+		scanf_s("%d", &k.birthday[2], 4);
 	}
 	else if (field == "address")
 	{
 		printf("\n\nEnter address: ");
-		getline(cin, w.address);
+		getline(cin, k.address);
 	}
 	else if (field == "education")
 	{
 		printf("\n\nEnter education info: ");
-		getline(cin, w.education);
+		getline(cin, k.education);
 	}
 	else if (field == "emplyear")
 	{
 		printf("\n\nEnter employment year: ");
-		scanf_s("%d", &w.employmentYear, 4);
+		scanf_s("%d", &k.employmentYear, 4);
 	}
 	else if (field == "department")
 	{
 		printf("\n\nEnter department number: ");
-		scanf_s("%d", &w.department, dNlen);
+		scanf_s("%d", &k.department);
 	}
 	else if (field == "tablenum")
 	{
 		printf("\n\nEnter table number: ");
-		scanf_s("%d", &w.tableNumber, tNlen);
+		scanf_s("%d", &k.tableNumber);
 	}
 	else
 	{
 		cout << "\nNo such field\n";
-		EditWorkerInfo(w);
+		EditWorkerInfo(k);
 	}
+
+	cout << "\nInformation saved!\n\n";
+
+	return k;
+}
+
+void arrSort()
+{
+	Worker* w = new Worker[length];
+	Worker temp;
+	w = workers;
+
+	for (int i = 0; i < length - 1; i++) {
+		for (int j = 0; j < length - i - 1; j++) {
+			if (w[j].tableNumber > w[j + 1].tableNumber) {
+				temp = w[j];
+				w[j] = w[j + 1];
+				w[j + 1] = temp;
+			}
+		}
+	}
+	workers = w;
 }
