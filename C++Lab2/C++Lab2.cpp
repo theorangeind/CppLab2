@@ -13,9 +13,9 @@ struct Worker
 	string fullName[3]; //first name, surname, last name
 	string address;
 	string education;
-	
+
 	unsigned short int birthday[3]; //day, month, year
- 
+
 	unsigned int department, employmentYear;
 
 	string getFullName()
@@ -37,6 +37,9 @@ struct Worker
 	}
 };
 
+int puint();
+int puint(int);
+
 Worker* InitArray();
 Worker InitWorker();
 Worker EditWorkerInfo(Worker);
@@ -52,7 +55,7 @@ int length;
 int main()
 {
 	cout << "Enter a new worker list length:\n";
-	scanf_s("%u", &length, 2);
+	length = puint();
 
 	if ((int)length < 1) length = 1;
 
@@ -147,7 +150,7 @@ void Question()
 		cout << "\nNo such command\n";
 	}
 
-	if(!exit) Question();
+	if (!exit) Question();
 }
 
 Worker InitWorker()
@@ -162,11 +165,13 @@ Worker InitWorker()
 	getline(cin, w.fullName[2]);
 
 	printf("\n\nEnter birthday:\nDay: ");
-	scanf_s("%u", &w.birthday[0]);
+	w.birthday[0] = puint(31);
+
 	printf("\nMonth: ");
-	scanf_s("%u", &w.birthday[1]);
+	w.birthday[1] = puint(12);
+
 	printf("\nYear: ");
-	scanf_s("%u", &w.birthday[2]);
+	w.birthday[2] = puint();
 
 	printf("\n\nEnter address: ");
 	cin.ignore();
@@ -176,13 +181,13 @@ Worker InitWorker()
 	getline(cin, w.education);
 
 	printf("\n\nEnter employment year: ");
-	scanf_s("%u", &w.employmentYear);
+	w.employmentYear = puint();
 
 	printf("\n\nEnter table number: ");
-	scanf_s("%u", &w.tableNumber);
+	w.tableNumber = puint();
 
 	printf("\n\nEnter department number: ");
-	scanf_s("%u", &w.department);
+	w.department = puint();
 
 	return w;
 }
@@ -209,7 +214,7 @@ Worker* InitArray()
 
 	if (length < 1) length = 1;
 
-	Worker* arr = (Worker*)malloc(length * sizeof(Worker)); 
+	Worker* arr = (Worker*)malloc(length * sizeof(Worker));
 
 	arr = new Worker[length];
 
@@ -217,11 +222,14 @@ Worker* InitArray()
 
 	string choise;
 
+	cout << "\nlength = " << length << "\n";
+
 	for (int i = 0; i < length; i++)
 	{
 		if (choise != "n")
 		{
 			printf("\nEnter worker data:\n");
+			if(i > 0) cin.ignore();
 			arr[i] = InitWorker();
 
 			if (i < length - 1)
@@ -229,7 +237,6 @@ Worker* InitArray()
 				do
 				{
 					printf("\nDo you want to continue? (y/n)\n");
-					cout << choise << "\n";
 					cin >> choise;
 				} while (choise != "y" && choise != "n");
 			}
@@ -281,7 +288,7 @@ int FindByTableNumber(int number)
 
 	string s = "No workers found with table number " + to_string(number);
 
-	if(counter == 0) throw  s;
+	if (counter == 0) throw s;
 
 	cin.ignore();
 }
@@ -294,7 +301,7 @@ Worker EditWorkerInfo(Worker w)
 
 	string field;
 	getline(cin, field);
-	
+
 	if (field == "name")
 	{
 		printf("\nEnter first name: ");
@@ -307,11 +314,11 @@ Worker EditWorkerInfo(Worker w)
 	else if (field == "birthday")
 	{
 		printf("\n\nEnter birthday:\nDay: ");
-		scanf_s("%d", &k.birthday[0], 2);
+		k.birthday[0] = puint(31);
 		printf("\nMonth: ");
-		scanf_s("%d", &k.birthday[1], 2);
+		k.birthday[1] = puint(12);
 		printf("\nYear: ");
-		scanf_s("%d", &k.birthday[2], 4);
+		k.birthday[2] = puint();
 	}
 	else if (field == "address")
 	{
@@ -326,17 +333,17 @@ Worker EditWorkerInfo(Worker w)
 	else if (field == "emplyear")
 	{
 		printf("\n\nEnter employment year: ");
-		scanf_s("%d", &k.employmentYear, 4);
+		k.employmentYear = puint();
 	}
 	else if (field == "department")
 	{
 		printf("\n\nEnter department number: ");
-		scanf_s("%d", &k.department);
+		k.department = puint();
 	}
 	else if (field == "tablenum")
 	{
 		printf("\n\nEnter table number: ");
-		scanf_s("%d", &k.tableNumber);
+		k.tableNumber = puint();
 	}
 	else
 	{
@@ -365,4 +372,32 @@ void arrSort()
 		}
 	}
 	workers = w;
+}
+
+int puint()
+{
+	string s;
+	cin >> s;
+
+	while (atoi(s.c_str()) <= 0)
+	{
+		cout << "\nError! Enter a correct value:\n";
+		cin >> s;
+	}
+	return atoi(s.c_str());
+}
+
+int puint(int maxValue)
+{
+	string s;
+	cin >> s;
+
+	if (maxValue <= 0) maxValue = 1;
+
+	while (atoi(s.c_str()) <= 0 || atoi(s.c_str()) > maxValue)
+	{
+		cout << "\nError! Enter a correct value:\n";
+		cin >> s;
+	}
+	return atoi(s.c_str());
 }
